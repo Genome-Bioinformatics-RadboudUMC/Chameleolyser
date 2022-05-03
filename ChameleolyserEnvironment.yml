@@ -1,4 +1,4 @@
-name: ChameleolyserTest
+name: Chameleolyser
 channels:
   - bioconda
   - conda-forge
