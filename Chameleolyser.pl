@@ -172,7 +172,8 @@ sub MaskReferenceGenome {
 	
 	my 	$PicardJarPath = `which picard`;
 		$PicardJarPath =~ s/\n//g;
-		$PicardJarPath .= "../../share/picard-2.20.8-0/picard.jar";
+		$PicardJarPath =~ s/bin\/.*$/bin\//g;
+		$PicardJarPath .= "../share/picard-2.20.8-0/picard.jar";
 	
 	# test if working directory exists
 	
@@ -232,10 +233,10 @@ sub GenerateMaskedAlignmentAndVcf {
 	= @_;
 	
 	# find Picard
-	
 	my 	$PicardJarPath = `which picard`;
 		$PicardJarPath =~ s/\n//g;
-		$PicardJarPath .= "../../share/picard-2.20.8-0/picard.jar";
+		$PicardJarPath =~ s/bin\/.*$/bin\//g;
+		$PicardJarPath .= "../share/picard-2.20.8-0/picard.jar";
 	
 	my 	$ExtractionBedFP		= "";
 	my 	$VarCallBedFP			= "";
