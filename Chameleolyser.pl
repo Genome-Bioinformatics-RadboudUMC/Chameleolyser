@@ -10,40 +10,6 @@
 ####################################################################################################################
 ####################################################################################################################
 
-# Add log
-
-##################################################################################################
-##################################################################################################
-##################################################################################################
-#######     		     	  	  		  	Read Config File  	  		   			   	   #######
-##################################################################################################
-##################################################################################################
-##################################################################################################
-
-my $ConfigFile;
-my $ConfigRef;
-my %Config;
-
-BEGIN {
-
-	use Config::General;
-	use Data::Dumper;
-	
-	$ConfigFile = "";
-	
-	for (my $I = 0; $I < scalar @ARGV; $I++){
-	
-		if ($ARGV[$I] =~ "--ConfigFile"){
-		
-			$ConfigFile = $ARGV[$I+1];
-			last;
-		}
-	}
-	
-	$ConfigRef 	= Config::General->new($ConfigFile);
-	%Config 	= $ConfigRef->getall;
-}
-
 ##################################################################################################
 ##################################################################################################
 ##################################################################################################
@@ -94,8 +60,7 @@ my 	$FilterRawVariants								= 0;
 ##################################################################################################
 ##################################################################################################
 
-GetOptions ("ConfigFile=s"							=>	\$ConfigFile,
-			"WORKING_DIR=s"							=>	\$WORKING_DIR,
+GetOptions ("WORKING_DIR=s"							=>	\$WORKING_DIR,
 			"PREFIX=s"								=>	\$PREFIX,
 			"SAMPLE_NAME=s"							=>	\$SAMPLE_NAME,
 			"ALIGNMENT_FP=s"						=>	\$ALIGNMENT_FP,
@@ -113,23 +78,19 @@ GetOptions ("ConfigFile=s"							=>	\$ConfigFile,
 ##################################################################################################
 ##################################################################################################
 
-PrepareBED									(\%Config,
-											 $WORKING_DIR,
+PrepareBED									($WORKING_DIR,
 											 $PREFIX) 							if $PrepareBED;
 
-MaskReferenceGenome 						(\%Config,
-											 $WORKING_DIR,
+MaskReferenceGenome 						($WORKING_DIR,
 											 $PREFIX) 							if $MaskReferenceGenome;
 											 
-GenerateMaskedAlignmentAndVcf				(\%Config,
-											 $WORKING_DIR,
+GenerateMaskedAlignmentAndVcf				($WORKING_DIR,
 											 $PREFIX,
 											 $SAMPLE_NAME,
 											 $ALIGNMENT_FP,
 											 $NR_OF_THREADS) 					if $GenerateMaskedAlignmentAndVcf;
 											 
-FilterRawVariants							(\%Config,
-											 $WORKING_DIR,
+FilterRawVariants							($WORKING_DIR,
 											 $PREFIX,
 											 $SAMPLE_NAME)						if $FilterRawVariants;
 
@@ -143,8 +104,7 @@ FilterRawVariants							(\%Config,
 
 sub PrepareBED {
 	
-	(my $ConfigRef,
-	 my $WORKING_DIR,
+	(my $WORKING_DIR,
 	 my $PREFIX)
 	= @_;
 	
@@ -204,14 +164,15 @@ sub PrepareBED {
 
 sub MaskReferenceGenome {
 	
-	(my $ConfigRef,
-	 my $WORKING_DIR,
+	(my $WORKING_DIR,
 	 my $PREFIX)
 	= @_;
 	
-	my $PicardJarPath 			= $ConfigRef->{Picard}{jar_path};
+	# find Picard
 	
-	print $PicardJarPath . "\n";
+	my 	$PicardJarPath = `which picard`;
+		$PicardJarPath =~ s/\n//g;
+		$PicardJarPath .= "../../share/picard-2.20.8-0/picard.jar";
 	
 	# test if working directory exists
 	
@@ -263,15 +224,19 @@ sub MaskReferenceGenome {
 
 sub GenerateMaskedAlignmentAndVcf {
 	
-	(my $ConfigRef,
-	 my $WORKING_DIR,
+	(my $WORKING_DIR,
 	 my $PREFIX,
 	 my $SAMPLE_NAME,
 	 my $ALIGNMENT_FP,
 	 my $NR_OF_THREADS)
 	= @_;
 	
-	my 	$PicardJarPath 			= $ConfigRef->{Picard}{jar_path};
+	# find Picard
+	
+	my 	$PicardJarPath = `which picard`;
+		$PicardJarPath =~ s/\n//g;
+		$PicardJarPath .= "../../share/picard-2.20.8-0/picard.jar";
+	
 	my 	$ExtractionBedFP		= "";
 	my 	$VarCallBedFP			= "";
 	my 	$CovExonsFP				= "";
@@ -324,70 +289,57 @@ sub GenerateMaskedAlignmentAndVcf {
 	
 	chdir	("$WORKING_DIR/RAW/");
 	
-	# system	("samtools view -b -L $ExtractionBedFP -o $SAMPLE_NAME.ori.bam $ALIGNMENT_FP");
+	system	("samtools view -b -L $ExtractionBedFP -o $SAMPLE_NAME.ori.bam $ALIGNMENT_FP");
+	system	("java -Xmx8G -jar $PicardJarPath SortSam I=$SAMPLE_NAME.ori.bam O=$SAMPLE_NAME.ori.sorted.bam SO=coordinate");
+	system	("java -Xmx8G -jar $PicardJarPath MarkDuplicates I=$SAMPLE_NAME.ori.sorted.bam O=$SAMPLE_NAME.ori.sorted.remdup.bam M=$SAMPLE_NAME.ori.sorted.remdup.met REMOVE_DUPLICATES=true");
 	
+	system	("rm -f $SAMPLE_NAME.ori.sorted.bam");
+	system	("samtools index $SAMPLE_NAME.ori.sorted.remdup.bam");
+	system	("samtools view -bh -q 1 $SAMPLE_NAME.ori.sorted.remdup.bam > $SAMPLE_NAME.ori.sorted.remdup.uniq.bam");
 	
-	
-	# system	("java -Xmx8G -jar $PicardJarPath SortSam I=$SAMPLE_NAME.ori.bam O=$SAMPLE_NAME.ori.sorted.bam SO=coordinate");
-	# system	("java -Xmx8G -jar $PicardJarPath MarkDuplicates I=$SAMPLE_NAME.ori.sorted.bam O=$SAMPLE_NAME.ori.sorted.remdup.bam M=$SAMPLE_NAME.ori.sorted.remdup.met REMOVE_DUPLICATES=true");
-	
-	
-	
-	# system	("rm -f $SAMPLE_NAME.ori.sorted.bam");
-	# system	("samtools index $SAMPLE_NAME.ori.sorted.remdup.bam");
-	# system	("samtools view -bh -q 1 $SAMPLE_NAME.ori.sorted.remdup.bam > $SAMPLE_NAME.ori.sorted.remdup.uniq.bam");
-	
-	
-	
-	# system	("bedtools coverage -a $CovExonsFP -b $SAMPLE_NAME.ori.sorted.remdup.bam -counts | bgzip -c > $SAMPLE_NAME.ori.sorted.remdup.cov.gz");
-	# system	("bedtools coverage -a $CovExonsFP -b $SAMPLE_NAME.ori.sorted.remdup.uniq.bam -counts | bgzip -c > $SAMPLE_NAME.ori.sorted.remdup.uniq.cov.gz");
+	system	("bedtools coverage -a $CovExonsFP -b $SAMPLE_NAME.ori.sorted.remdup.bam -counts | bgzip -c > $SAMPLE_NAME.ori.sorted.remdup.cov.gz");
+	system	("bedtools coverage -a $CovExonsFP -b $SAMPLE_NAME.ori.sorted.remdup.uniq.bam -counts | bgzip -c > $SAMPLE_NAME.ori.sorted.remdup.uniq.cov.gz");	
+	system	("lofreq call --call-indels --force-overwrite --no-default-filter --use-orphan -a 1 -b 20 -B -N -f $RefGenome -l $VarCallBedFP -o $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf $SAMPLE_NAME.ori.sorted.remdup.bam");
 		
-	# system	("lofreq call --call-indels --force-overwrite --no-default-filter --use-orphan -a 1 -b 20 -B -N -f $RefGenome -l $VarCallBedFP -o $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf $SAMPLE_NAME.ori.sorted.remdup.bam");
+	system	("bgzip -c $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf > $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf.gz");
+	system	("tabix -p vcf $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf.gz");
+	system	("rm -f $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf");
+	system	("gatk --java-options \-Xmx4g\ HaplotypeCaller -R $RefGenome -I $SAMPLE_NAME.ori.sorted.remdup.bam -O $SAMPLE_NAME.ori.sorted.remdup.gatk.vcf -L $VarCallBedFP --annotation MappingQualityRankSumTest --annotation MappingQualityZero --annotation QualByDepth --annotation ReadPosRankSumTest --annotation RMSMappingQuality --annotation BaseQualityRankSumTest --annotation FisherStrand --annotation MappingQuality --annotation DepthPerAlleleBySample");
+	
+	system	("bgzip -c $SAMPLE_NAME\.ori.sorted.remdup.gatk.vcf > $SAMPLE_NAME.ori.sorted.remdup.gatk.vcf.gz");
+	system	("tabix -p vcf $SAMPLE_NAME\.ori.sorted.remdup.gatk.vcf.gz");
+	system	("rm -f $SAMPLE_NAME\.ori.sorted.remdup.gatk.vcf");
+	system	("rm -f $SAMPLE_NAME\.ori.sorted.remdup.gatk.vcf.idx");
+	system	("bedtools coverage -a $VarCallBedFP -b $SAMPLE_NAME.ori.sorted.remdup.bam -d -sorted  -g $GenomeFileFilePath > $SAMPLE_NAME.ori.sorted.remdup.cov");
+	system	("bgzip -c $SAMPLE_NAME.ori.sorted.remdup.cov > $SAMPLE_NAME.ori.sorted.remdup.cov.gz");
+	system	("tabix -p bed $SAMPLE_NAME.ori.sorted.remdup.cov.gz");
+	system	("rm -f $SAMPLE_NAME.ori.sorted.remdup.cov");
+	
+	system	("samtools collate -uO $SAMPLE_NAME.ori.sorted.remdup.bam $SAMPLE_NAME | samtools fastq -1 $SAMPLE_NAME.1.fastq -2 $SAMPLE_NAME.2.fastq -0 $SAMPLE_NAME.0.fastq -t -");
+	system	("gzip $SAMPLE_NAME.1.fastq");
+	system	("gzip $SAMPLE_NAME.2.fastq");
+	
+	system	("repair.sh -in1=$SAMPLE_NAME.1.fastq.gz in2=$SAMPLE_NAME.2.fastq.gz out1=$SAMPLE_NAME.rep.1.fastq.gz out2=$SAMPLE_NAME.rep.2.fastq.gz outsingle=$SAMPLE_NAME.rep.0.fastq.gz usejni=t");
+	system	("rm -f $SAMPLE_NAME.1.fastq.gz");
+	system	("rm -f $SAMPLE_NAME.2.fastq.gz");
+	system	("rm -f $SAMPLE_NAME.0.fastq");
+	
+	system	("bwa mem -t $NR_OF_THREADS -M $MaskedRefGenome $SAMPLE_NAME.rep.1.fastq.gz $SAMPLE_NAME.rep.2.fastq.gz > $SAMPLE_NAME.masked.sam");
+	system	("samtools view -Sb $SAMPLE_NAME.masked.sam > $SAMPLE_NAME.masked.bam");
+	system	("java -Xmx8G -jar $PicardJarPath SortSam I=$SAMPLE_NAME.masked.bam O=$SAMPLE_NAME.masked.sorted.bam SO=coordinate");
+	
+	system	("rm -f $SAMPLE_NAME.rep.0.fastq.gz");
+	system	("rm -f $SAMPLE_NAME.rep.1.fastq.gz");
+	system	("rm -f $SAMPLE_NAME.rep.2.fastq.gz");
+	
+	system	("rm -f $SAMPLE_NAME.masked.sam");
+	system	("rm -f $SAMPLE_NAME.masked.bam");
 		
-	# system	("bgzip -c $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf > $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf.gz");
-	# system	("tabix -p vcf $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf.gz");
-	# system	("rm -f $SAMPLE_NAME.ori.sorted.remdup.lofreq.vcf");
+	system	("java -Xmx8G -jar $PicardJarPath MarkDuplicates I=$SAMPLE_NAME.masked.sorted.bam O=$SAMPLE_NAME.masked.sorted.remdup.bam M=$SAMPLE_NAME.masked.sorted.remdup.met REMOVE_DUPLICATES=true");
 	
-	# system	("gatk --java-options \-Xmx4g\ HaplotypeCaller -R $RefGenome -I $SAMPLE_NAME.ori.sorted.remdup.bam -O $SAMPLE_NAME.ori.sorted.remdup.gatk.vcf -L $VarCallBedFP --annotation MappingQualityRankSumTest --annotation MappingQualityZero --annotation QualByDepth --annotation ReadPosRankSumTest --annotation RMSMappingQuality --annotation BaseQualityRankSumTest --annotation FisherStrand --annotation MappingQuality --annotation DepthPerAlleleBySample");
+	system	("rm -f $SAMPLE_NAME.masked.sorted.bam");
 	
-	# system	("bgzip -c $SAMPLE_NAME\.ori.sorted.remdup.gatk.vcf > $SAMPLE_NAME.ori.sorted.remdup.gatk.vcf.gz");
-	# system	("tabix -p vcf $SAMPLE_NAME\.ori.sorted.remdup.gatk.vcf.gz");
-	
-	# system	("rm -f $SAMPLE_NAME\.ori.sorted.remdup.gatk.vcf");
-	# system	("rm -f $SAMPLE_NAME\.ori.sorted.remdup.gatk.vcf.idx");
-	# system	("bedtools coverage -a $VarCallBedFP -b $SAMPLE_NAME.ori.sorted.remdup.bam -d -sorted  -g $GenomeFileFilePath > $SAMPLE_NAME.ori.sorted.remdup.cov");
-	# system	("bgzip -c $SAMPLE_NAME.ori.sorted.remdup.cov > $SAMPLE_NAME.ori.sorted.remdup.cov.gz");
-	# system	("tabix -p bed $SAMPLE_NAME.ori.sorted.remdup.cov.gz");
-	# system	("rm -f $SAMPLE_NAME.ori.sorted.remdup.cov");
-	
-	
-	
-
-	# system	("samtools collate -uO $SAMPLE_NAME.ori.sorted.remdup.bam $SAMPLE_NAME | samtools fastq -1 $SAMPLE_NAME.1.fastq -2 $SAMPLE_NAME.2.fastq -0 $SAMPLE_NAME.0.fastq -t -");
-	# system	("gzip $SAMPLE_NAME.1.fastq");
-	# system	("gzip $SAMPLE_NAME.2.fastq");
-	
-	# system	("repair.sh -in1=$SAMPLE_NAME.1.fastq.gz in2=$SAMPLE_NAME.2.fastq.gz out1=$SAMPLE_NAME.rep.1.fastq.gz out2=$SAMPLE_NAME.rep.2.fastq.gz outsingle=$SAMPLE_NAME.rep.0.fastq.gz usejni=t");
-	# system	("rm -f $SAMPLE_NAME.1.fastq.gz");
-	# system	("rm -f $SAMPLE_NAME.2.fastq.gz");
-	# system	("rm -f $SAMPLE_NAME.0.fastq");
-	
-	# system	("bwa mem -t $NR_OF_THREADS -M $MaskedRefGenome $SAMPLE_NAME.rep.1.fastq.gz $SAMPLE_NAME.rep.2.fastq.gz > $SAMPLE_NAME.masked.sam");
-	# system	("samtools view -Sb $SAMPLE_NAME.masked.sam > $SAMPLE_NAME.masked.bam");
-	# system	("java -Xmx8G -jar $PicardJarPath SortSam I=$SAMPLE_NAME.masked.bam O=$SAMPLE_NAME.masked.sorted.bam SO=coordinate");
-	
-	# system	("rm -f $SAMPLE_NAME.rep.0.fastq.gz");
-	# system	("rm -f $SAMPLE_NAME.rep.1.fastq.gz");
-	# system	("rm -f $SAMPLE_NAME.rep.2.fastq.gz");
-	
-	# system	("rm -f $SAMPLE_NAME.masked.sam");
-	# system	("rm -f $SAMPLE_NAME.masked.bam");
-		
-	# system	("java -Xmx8G -jar $PicardJarPath MarkDuplicates I=$SAMPLE_NAME.masked.sorted.bam O=$SAMPLE_NAME.masked.sorted.remdup.bam M=$SAMPLE_NAME.masked.sorted.remdup.met REMOVE_DUPLICATES=true");
-	
-	# system	("rm -f $SAMPLE_NAME.masked.sorted.bam");
-	
-	# system	("lofreq  indelqual --dindel -f $MaskedRefGenome -o $SAMPLE_NAME.masked.sorted.remdup.bqsr.bam $SAMPLE_NAME.masked.sorted.remdup.bam");
+	system	("lofreq  indelqual --dindel -f $MaskedRefGenome -o $SAMPLE_NAME.masked.sorted.remdup.bqsr.bam $SAMPLE_NAME.masked.sorted.remdup.bam");
 	
 	
 	
@@ -419,8 +371,7 @@ sub GenerateMaskedAlignmentAndVcf {
 
 sub FilterRawVariants {
 	
-	(my $ConfigRef,
-	 my $WORKING_DIR,
+	(my $WORKING_DIR,
 	 my $PREFIX,
 	 my $SAMPLE_NAME)
 	= @_;
