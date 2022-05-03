@@ -285,9 +285,9 @@ sub GenerateMaskedAlignmentAndVcf {
 
 	# Generate masked alignment
 	
-	unless (-d "$WORKING_DIR/RAW/"){system("mkdir $WORKING_DIR/RAW/");};
+	unless (-d "$WORKING_DIR/RAW/$SAMPLE_NAME/"){system("mkdir $WORKING_DIR/RAW/$SAMPLE_NAME/");};
 	
-	chdir	("$WORKING_DIR/RAW/");
+	chdir	("$WORKING_DIR/RAW/$SAMPLE_NAME/");
 	
 	system	("samtools view -b -L $ExtractionBedFP -o $SAMPLE_NAME.ori.bam $ALIGNMENT_FP");
 	system	("java -Xmx8G -jar $PicardJarPath SortSam I=$SAMPLE_NAME.ori.bam O=$SAMPLE_NAME.ori.sorted.bam SO=coordinate");
@@ -385,18 +385,18 @@ sub FilterRawVariants {
 	my $CohortAF_FP						= "";
 	
 	my $RegionToStrandsFP				= "$WORKING_DIR\/BED/RegionID_ToStrand.txt";		
-	my $VariantsOutFP					= $WORKING_DIR . "RAW/$SAMPLE_NAME.RawSNVs.txt";
-	my $VariantsFilter1OutFP			= $WORKING_DIR . "RAW/$SAMPLE_NAME.Filter1SNVs.txt";
-	my $VariantsFilter2OutFP			= $WORKING_DIR . "RAW/$SAMPLE_NAME.Filter2SNVs.txt";
-	my $VariantsFilter1BedFP			= $WORKING_DIR . "RAW/$SAMPLE_NAME.Filter1SNVs.bed";
-	my $SortedVariantsFilter1BedFP		= $WORKING_DIR . "RAW/$SAMPLE_NAME.Filter1SNVs.sorted.bed";
-	my $VariantsFilter1HpAnnoBedFP		= $WORKING_DIR . "RAW/$SAMPLE_NAME.Filter1SNVs.HpAnno.bed";
+	my $VariantsOutFP					= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.RawSNVs.txt";
+	my $VariantsFilter1OutFP			= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.txt";
+	my $VariantsFilter2OutFP			= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter2SNVs.txt";
+	my $VariantsFilter1BedFP			= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.bed";
+	my $SortedVariantsFilter1BedFP		= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.sorted.bed";
+	my $VariantsFilter1HpAnnoBedFP		= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.Filter1SNVs.HpAnno.bed";
 	my $FileHandle						= new IO::Zlib;
 	my %SDsBED 							= ();
 	my %SDsVAR 							= ();
 	my @VCFs							= ( "$SAMPLE_NAME.masked.sorted.remdup.bqsr.rg.lofreq.vcf.gz",
 											"$SAMPLE_NAME.ori.sorted.remdup.gatk.vcf.gz");
-	my $CovFilePath						= $WORKING_DIR . "RAW/$SAMPLE_NAME.masked.sorted.remdup.bqsr.rg.cov.gz";
+	my $CovFilePath						= $WORKING_DIR . "RAW/$SAMPLE_NAME/$SAMPLE_NAME.masked.sorted.remdup.bqsr.rg.cov.gz";
 	my %LoFreq_Variants					= ();
 	my %GATK_Variants					= ();
 	my %PosOfInterest					= ();
