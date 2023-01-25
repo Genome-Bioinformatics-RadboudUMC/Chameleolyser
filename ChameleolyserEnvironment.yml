@@ -1,4 +1,4 @@
-name: Cham
+name: Chameleolyser
 channels:
   - bioconda
   - conda-forge
