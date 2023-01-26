@@ -286,7 +286,7 @@ sub GenerateMaskedAlignmentAndVcf {
 
 	# Generate masked alignment
 	
-	unless (-d "$WORKING_DIR/RAW/$SAMPLE_NAME/"){system("mkdir $WORKING_DIR/RAW/$SAMPLE_NAME/");};
+	unless (-d "$WORKING_DIR/RAW/$SAMPLE_NAME/"){system("mkdir -p $WORKING_DIR/RAW/$SAMPLE_NAME/");};
 	
 	chdir	("$WORKING_DIR/RAW/$SAMPLE_NAME/");
 	
