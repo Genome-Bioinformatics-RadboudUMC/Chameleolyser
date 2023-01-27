@@ -531,7 +531,7 @@ sub FilterRawVariants {
 		my 	$VARIANT_CALLER_SELECT			= "";
 			$FileHandle						= new IO::Zlib;
 		
-		my $VCF_FilePath 					= $WORKING_DIR . "RAW/" . $VCF;
+		my $VCF_FilePath 					= $WORKING_DIR . "RAW/$SAMPLE_NAME/" . $VCF;
 		
 		if 		($VCF =~ m/\.gatk\./)	{$Caller = "gatk";}
 		else 							{$Caller = "lofreq";}
