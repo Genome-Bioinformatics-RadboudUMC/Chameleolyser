@@ -1,4 +1,3 @@
-# temporary under maintenance
 # Chameleolyser
 Chameleolyser is a bioinformatics tool to identify genetic variants in homologous regions using whole-exome sequencing (WES) data. These variants remain hidden in a regular WES analysis. The current implementation of our software is hg19-based and is tested on CentOS Linux 7. However, it should run on any Linux OS. The only required input is a CRAM or BAM file.
 
