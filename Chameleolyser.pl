@@ -39,6 +39,7 @@ use List::Util qw(min max);
 
 my 	$WORKING_DIR									= "";
 my 	$PREFIX											= "";
+my 	$OMIM											= "";
 my 	$SAMPLE_NAME									= "";
 my 	$ALIGNMENT_FP									= "";
 my	$NR_OF_THREADS									= 1;
@@ -62,6 +63,7 @@ my 	$FilterRawVariants								= 0;
 
 GetOptions ("WORKING_DIR=s"							=>	\$WORKING_DIR,
 			"PREFIX=s"								=>	\$PREFIX,
+			"OMIM=s"								=>	\$OMIM,
 			"SAMPLE_NAME=s"							=>	\$SAMPLE_NAME,
 			"ALIGNMENT_FP=s"						=>	\$ALIGNMENT_FP,
 			"NR_OF_THREADS=i"						=>	\$NR_OF_THREADS,
@@ -79,19 +81,23 @@ GetOptions ("WORKING_DIR=s"							=>	\$WORKING_DIR,
 ##################################################################################################
 
 PrepareBED									($WORKING_DIR,
-											 $PREFIX) 							if $PrepareBED;
+											 $PREFIX,
+											 $OMIM) 							if $PrepareBED;
 
 MaskReferenceGenome 						($WORKING_DIR,
-											 $PREFIX) 							if $MaskReferenceGenome;
+											 $PREFIX,
+											 $OMIM) 							if $MaskReferenceGenome;
 											 
 GenerateMaskedAlignmentAndVcf				($WORKING_DIR,
 											 $PREFIX,
+											 $OMIM,
 											 $SAMPLE_NAME,
 											 $ALIGNMENT_FP,
 											 $NR_OF_THREADS) 					if $GenerateMaskedAlignmentAndVcf;
 											 
 FilterRawVariants							($WORKING_DIR,
 											 $PREFIX,
+											 $OMIM,
 											 $SAMPLE_NAME)						if $FilterRawVariants;
 
 ##################################################################################################
@@ -105,7 +111,8 @@ FilterRawVariants							($WORKING_DIR,
 sub PrepareBED {
 	
 	(my $WORKING_DIR,
-	 my $PREFIX)
+	 my $PREFIX,
+	 my $OMIM)
 	= @_;
 	
 	# test if working directory exists
@@ -121,39 +128,81 @@ sub PrepareBED {
 	unless	(-d "$WORKING_DIR/BED/"){system("mkdir $WORKING_DIR/BED/");}
 	chdir	("$WORKING_DIR/BED/");
 	
+	All.forextraction.omim.noalt.chr.bed
+	
 	if ($PREFIX eq "chr"){
 		
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.formasking.noalt.chr.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forextraction.noalt.chr.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forvarcall.noalt.chr.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.homologousexons.noalt.chr.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllSDs.noalt.chr.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllToMapOnToOther.chr.txt.gz");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/MappedSDs.chr.txt");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/PosToRegionID.chr.txt.gz");
-		
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/HPs.noalt.chr.bed.gz");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/SitesToExclude.noalt.chr.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/CohortAlleleFreq.chr.txt");
-		
-		system("gunzip HPs.noalt.chr.bed.gz");
+		if ($OMIM eq "yes"){
+			
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.formasking.omim.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forextraction.omim.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forvarcall.omim.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.homologousexons.omim.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllSDs.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllToMapOnToOther.chr.txt.gz");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/MappedSDs.chr.txt");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/PosToRegionID.chr.txt.gz");
+			
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/HPs.noalt.chr.bed.gz");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/SitesToExclude.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/CohortAlleleFreq.chr.txt");
+			
+			system("gunzip HPs.noalt.chr.bed.gz");
+		}
+		else {
+			
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.formasking.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forextraction.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forvarcall.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.homologousexons.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllSDs.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllToMapOnToOther.chr.txt.gz");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/MappedSDs.chr.txt");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/PosToRegionID.chr.txt.gz");
+			
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/HPs.noalt.chr.bed.gz");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/SitesToExclude.noalt.chr.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/CohortAlleleFreq.chr.txt");
+			
+			system("gunzip HPs.noalt.chr.bed.gz");
+		}
 	}
 	else {
 		
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.formasking.noalt.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forextraction.noalt.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forvarcall.noalt.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.homologousexons.noalt.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllSDs.noalt.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllToMapOnToOther.txt.gz");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/MappedSDs.txt");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/PosToRegionID.txt.gz");
+		if ($OMIM eq "yes"){
+			
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.formasking.omim.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forextraction.omim.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forvarcall.omim.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.homologousexons.omim.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllSDs.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllToMapOnToOther.txt.gz");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/MappedSDs.txt");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/PosToRegionID.txt.gz");
+			
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/HPs.noalt.bed.gz");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/SitesToExclude.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/CohortAlleleFreq.txt");
+			
+			system("gunzip HPs.noalt.bed.gz");
+		}
+		else {
 		
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/HPs.noalt.bed.gz");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/SitesToExclude.noalt.bed");
-		system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/CohortAlleleFreq.txt");
-		
-		system("gunzip HPs.noalt.bed.gz");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.formasking.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forextraction.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.forvarcall.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/All.homologousexons.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllSDs.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/AllToMapOnToOther.txt.gz");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/MappedSDs.txt");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/PosToRegionID.txt.gz");
+			
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/HPs.noalt.bed.gz");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/SitesToExclude.noalt.bed");
+			system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/CohortAlleleFreq.txt");
+			
+			system("gunzip HPs.noalt.bed.gz");
+		}
 	}
 	
 	system	("wget https://raw.githubusercontent.com/Genome-Bioinformatics-RadboudUMC/ChameleolyserBEDs/main/RegionID_ToStrand.txt");
@@ -165,7 +214,8 @@ sub PrepareBED {
 sub MaskReferenceGenome {
 	
 	(my $WORKING_DIR,
-	 my $PREFIX)
+	 my $PREFIX,
+	 my $OMIM)
 	= @_;
 	
 	# find Picard
@@ -193,31 +243,65 @@ sub MaskReferenceGenome {
 	
 	if ($PREFIX eq "chr"){
 		
-		system	("wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.25_GRCh37.p13/GRCh37_seqs_for_alignment_pipelines/GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
-		system 	("gunzip GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
-		system	("mv GCA_000001405.14_GRCh37.p13_full_analysis_set.fna hg19.chr.fa");
-		system 	("bwa index hg19.chr.fa");
-		system 	("samtools faidx hg19.chr.fa");
-		system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.chr.fa.fai > hg19.chr.txt");
-		system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.chr.fa OUTPUT=hg19.chr.dict");
-		system 	("bedtools maskfasta -fi hg19.chr.fa -bed ../BED/All.formasking.noalt.chr.bed -fo hg19.masked.chr.fa");
-		system 	("bwa index hg19.masked.chr.fa");
-		system 	("samtools faidx hg19.masked.chr.fa");	
-		system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.chr.fa OUTPUT=hg19.masked.chr.dict");
+		if ($OMIM eq "yes"){
+		
+			system	("wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.25_GRCh37.p13/GRCh37_seqs_for_alignment_pipelines/GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
+			system 	("gunzip GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
+			system	("mv GCA_000001405.14_GRCh37.p13_full_analysis_set.fna hg19.chr.fa");
+			system 	("bwa index hg19.chr.fa");
+			system 	("samtools faidx hg19.chr.fa");
+			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.chr.fa.fai > hg19.chr.txt");
+			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.chr.fa OUTPUT=hg19.chr.dict");
+			system 	("bedtools maskfasta -fi hg19.chr.fa -bed ../BED/All.formasking.omim.noalt.chr.bed -fo hg19.masked.chr.fa");
+			system 	("bwa index hg19.masked.chr.fa");
+			system 	("samtools faidx hg19.masked.chr.fa");	
+			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.chr.fa OUTPUT=hg19.masked.chr.dict");
+		}
+		else {
+			
+			system	("wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.25_GRCh37.p13/GRCh37_seqs_for_alignment_pipelines/GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
+			system 	("gunzip GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
+			system	("mv GCA_000001405.14_GRCh37.p13_full_analysis_set.fna hg19.chr.fa");
+			system 	("bwa index hg19.chr.fa");
+			system 	("samtools faidx hg19.chr.fa");
+			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.chr.fa.fai > hg19.chr.txt");
+			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.chr.fa OUTPUT=hg19.chr.dict");
+			system 	("bedtools maskfasta -fi hg19.chr.fa -bed ../BED/All.formasking.noalt.chr.bed -fo hg19.masked.chr.fa");
+			system 	("bwa index hg19.masked.chr.fa");
+			system 	("samtools faidx hg19.masked.chr.fa");	
+			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.chr.fa OUTPUT=hg19.masked.chr.dict");
+		}
 	}
 	else {
 		
-		system	("wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz");
-		system 	("gunzip human_g1k_v37.fasta.gz");
-		system	("mv human_g1k_v37.fasta hg19.fa");
-		system 	("bwa index hg19.fa");
-		system 	("samtools faidx hg19.fa");	
-		system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.fa.fai > hg19.txt");
-		system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.fa OUTPUT=hg19.dict");
-		system 	("bedtools maskfasta -fi hg19.fa -bed ../BED/All.formasking.noalt.bed -fo hg19.masked.fa");
-		system 	("bwa index hg19.masked.fa");
-		system 	("samtools faidx hg19.masked.fa");	
-		system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.fa OUTPUT=hg19.masked.dict");
+		if ($OMIM eq "yes"){
+		
+			system	("wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz");
+			system 	("gunzip human_g1k_v37.fasta.gz");
+			system	("mv human_g1k_v37.fasta hg19.fa");
+			system 	("bwa index hg19.fa");
+			system 	("samtools faidx hg19.fa");	
+			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.fa.fai > hg19.txt");
+			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.fa OUTPUT=hg19.dict");
+			system 	("bedtools maskfasta -fi hg19.fa -bed ../BED/All.formasking.omim.noalt.bed -fo hg19.masked.fa");
+			system 	("bwa index hg19.masked.fa");
+			system 	("samtools faidx hg19.masked.fa");	
+			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.fa OUTPUT=hg19.masked.dict");
+		}
+		else {
+			
+			system	("wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.25_GRCh37.p13/GRCh37_seqs_for_alignment_pipelines/GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
+			system 	("gunzip GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
+			system	("mv GCA_000001405.14_GRCh37.p13_full_analysis_set.fna hg19.chr.fa");
+			system 	("bwa index hg19.chr.fa");
+			system 	("samtools faidx hg19.chr.fa");
+			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.chr.fa.fai > hg19.chr.txt");
+			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.chr.fa OUTPUT=hg19.chr.dict");
+			system 	("bedtools maskfasta -fi hg19.chr.fa -bed ../BED/All.formasking.noalt.chr.bed -fo hg19.masked.chr.fa");
+			system 	("bwa index hg19.masked.chr.fa");
+			system 	("samtools faidx hg19.masked.chr.fa");	
+			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.chr.fa OUTPUT=hg19.masked.chr.dict");
+		}
 	}
 	
 	print "Masking Ready!\n";
@@ -227,6 +311,7 @@ sub GenerateMaskedAlignmentAndVcf {
 	
 	(my $WORKING_DIR,
 	 my $PREFIX,
+	 my $OMIM,
 	 my $SAMPLE_NAME,
 	 my $ALIGNMENT_FP,
 	 my $NR_OF_THREADS)
@@ -247,21 +332,45 @@ sub GenerateMaskedAlignmentAndVcf {
 	
 	if ($PREFIX eq "chr"){
 		
-		$ExtractionBedFP		= "$WORKING_DIR/BED/All.forextraction.noalt.chr.bed";
-		$VarCallBedFP			= "$WORKING_DIR/BED/All.forvarcall.noalt.chr.bed";
-		$CovExonsFP				= "$WORKING_DIR/BED/All.homologousexons.noalt.chr.bed";
-		$RefGenome				= "$WORKING_DIR/REF/hg19.chr.fa";
-		$MaskedRefGenome		= "$WORKING_DIR/REF/hg19.masked.chr.fa";
-		$GenomeFileFilePath		= "$WORKING_DIR/REF/hg19.chr.txt";
+		if ($OMIM eq "yes"){ 
+		
+			$ExtractionBedFP		= "$WORKING_DIR/BED/All.forextraction.omim.noalt.chr.bed";
+			$VarCallBedFP			= "$WORKING_DIR/BED/All.forvarcall.omim.noalt.chr.bed";
+			$CovExonsFP				= "$WORKING_DIR/BED/All.homologousexons.omim.noalt.chr.bed";
+			$RefGenome				= "$WORKING_DIR/REF/hg19.chr.fa";
+			$MaskedRefGenome		= "$WORKING_DIR/REF/hg19.masked.chr.fa";
+			$GenomeFileFilePath		= "$WORKING_DIR/REF/hg19.chr.txt";
+		}
+		else {
+			
+			$ExtractionBedFP		= "$WORKING_DIR/BED/All.forextraction.noalt.chr.bed";
+			$VarCallBedFP			= "$WORKING_DIR/BED/All.forvarcall.noalt.chr.bed";
+			$CovExonsFP				= "$WORKING_DIR/BED/All.homologousexons.noalt.chr.bed";
+			$RefGenome				= "$WORKING_DIR/REF/hg19.chr.fa";
+			$MaskedRefGenome		= "$WORKING_DIR/REF/hg19.masked.chr.fa";
+			$GenomeFileFilePath		= "$WORKING_DIR/REF/hg19.chr.txt";
+		}
 	}
 	else {
 		
-		$ExtractionBedFP		= "$WORKING_DIR/BED/All.forextraction.noalt.bed";
-		$VarCallBedFP			= "$WORKING_DIR/BED/All.forvarcall.noalt.bed";
-		$CovExonsFP				= "$WORKING_DIR/BED/All.homologousexons.noalt.bed";
-		$RefGenome				= "$WORKING_DIR/REF/hg19.fa";
-		$MaskedRefGenome		= "$WORKING_DIR/REF/hg19.masked.fa";
-		$GenomeFileFilePath		= "$WORKING_DIR/REF/hg19.txt";
+		if ($OMIM eq "yes"){
+		
+			$ExtractionBedFP		= "$WORKING_DIR/BED/All.forextraction.omim.noalt.bed";
+			$VarCallBedFP			= "$WORKING_DIR/BED/All.forvarcall.omim.noalt.bed";
+			$CovExonsFP				= "$WORKING_DIR/BED/All.homologousexons.omim.noalt.bed";
+			$RefGenome				= "$WORKING_DIR/REF/hg19.fa";
+			$MaskedRefGenome		= "$WORKING_DIR/REF/hg19.masked.fa";
+			$GenomeFileFilePath		= "$WORKING_DIR/REF/hg19.txt";
+		}
+		else {
+			
+			$ExtractionBedFP		= "$WORKING_DIR/BED/All.forextraction.noalt.bed";
+			$VarCallBedFP			= "$WORKING_DIR/BED/All.forvarcall.noalt.bed";
+			$CovExonsFP				= "$WORKING_DIR/BED/All.homologousexons.noalt.bed";
+			$RefGenome				= "$WORKING_DIR/REF/hg19.fa";
+			$MaskedRefGenome		= "$WORKING_DIR/REF/hg19.masked.fa";
+			$GenomeFileFilePath		= "$WORKING_DIR/REF/hg19.txt";
+		}
 	}
 	
 	# test if working directory, refseq and BEDs exists
@@ -374,6 +483,7 @@ sub FilterRawVariants {
 	
 	(my $WORKING_DIR,
 	 my $PREFIX,
+	 my $OMIM,
 	 my $SAMPLE_NAME)
 	= @_;
 	
