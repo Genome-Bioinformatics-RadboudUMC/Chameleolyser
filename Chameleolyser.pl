@@ -128,8 +128,6 @@ sub PrepareBED {
 	unless	(-d "$WORKING_DIR/BED/"){system("mkdir $WORKING_DIR/BED/");}
 	chdir	("$WORKING_DIR/BED/");
 	
-	All.forextraction.omim.noalt.chr.bed
-	
 	if ($PREFIX eq "chr"){
 		
 		if ($OMIM eq "yes"){
