@@ -288,7 +288,7 @@ sub MaskReferenceGenome {
 		}
 		else {
 			
-			system	("wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.25_GRCh37.p13/GRCh37_seqs_for_alignment_pipelines/GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
+			system	("wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz");
 			system 	("gunzip GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
 			system	("mv GCA_000001405.14_GRCh37.p13_full_analysis_set.fna hg19.fa");
 			system 	("bwa index hg19.fa");
