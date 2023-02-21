@@ -290,15 +290,15 @@ sub MaskReferenceGenome {
 			
 			system	("wget https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_mammalian/Homo_sapiens/all_assembly_versions/GCF_000001405.25_GRCh37.p13/GRCh37_seqs_for_alignment_pipelines/GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
 			system 	("gunzip GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
-			system	("mv GCA_000001405.14_GRCh37.p13_full_analysis_set.fna hg19.chr.fa");
-			system 	("bwa index hg19.chr.fa");
-			system 	("samtools faidx hg19.chr.fa");
-			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.chr.fa.fai > hg19.chr.txt");
-			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.chr.fa OUTPUT=hg19.chr.dict");
-			system 	("bedtools maskfasta -fi hg19.chr.fa -bed ../BED/All.formasking.noalt.chr.bed -fo hg19.masked.chr.fa");
-			system 	("bwa index hg19.masked.chr.fa");
-			system 	("samtools faidx hg19.masked.chr.fa");	
-			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.chr.fa OUTPUT=hg19.masked.chr.dict");
+			system	("mv GCA_000001405.14_GRCh37.p13_full_analysis_set.fna hg19.fa");
+			system 	("bwa index hg19.fa");
+			system 	("samtools faidx hg19.fa");
+			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.fa.fai > hg19.txt");
+			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.fa OUTPUT=hg19.dict");
+			system 	("bedtools maskfasta -fi hg19.fa -bed ../BED/All.formasking.noalt.bed -fo hg19.masked.fa");
+			system 	("bwa index hg19.masked.fa");
+			system 	("samtools faidx hg19.masked.fa");	
+			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.masked.fa OUTPUT=hg19.masked.dict");
 		}
 	}
 	
