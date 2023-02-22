@@ -289,10 +289,10 @@ sub MaskReferenceGenome {
 		else {
 			
 			system	("wget http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz");
-			system 	("gunzip GCA_000001405.14_GRCh37.p13_full_analysis_set.fna.gz");
-			system	("mv GCA_000001405.14_GRCh37.p13_full_analysis_set.fna hg19.fa");
+			system 	("gunzip human_g1k_v37.fasta.gz");
+			system	("mv human_g1k_v37.fasta hg19.fa");
 			system 	("bwa index hg19.fa");
-			system 	("samtools faidx hg19.fa");
+			system 	("samtools faidx hg19.fa");	
 			system	("awk -v OFS='\t' {'print \$1,\$2'} hg19.fa.fai > hg19.txt");
 			system	("java -Xmx8G -jar $PicardJarPath CreateSequenceDictionary REFERENCE=hg19.fa OUTPUT=hg19.dict");
 			system 	("bedtools maskfasta -fi hg19.fa -bed ../BED/All.formasking.noalt.bed -fo hg19.masked.fa");
