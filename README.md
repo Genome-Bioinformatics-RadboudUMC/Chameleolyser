@@ -68,6 +68,7 @@ perl Chameleolyser.pl --GenerateMaskedAlignmentAndVcf --WORKING_DIR=<WORKING_DIR
 perl Chameleolyser.pl --FilterRawVariants --WORKING_DIR=<WORKING_DIRECTORY> --SAMPLE_NAME=HG002
 ```
 
+The filtered variant lists that should result from this operation can be found in the "DEMO_OUTPUT" folder in the repository.
 
 # License
 [GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
