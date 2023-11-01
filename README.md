@@ -47,19 +47,19 @@ wget ftp://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/
 Since the 1000 genomes reference sequence is used to align the HG002 reads (thus no 'chr' prefix in the chromosome names), we run the following command. The working directory needs to be the full path of an existing directory on your system. 
 
 ```
-perl Chameleolyser.pl --PrepareBED --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr --OMIM=yes
+perl Chameleolyser.pl --PrepareBED --WORKING_DIR=<WORKING_DIRECTORY> --OMIM=yes
 ```
 
 ## Mask reference genome
 
 ```
-perl Chameleolyser.pl --MaskReferenceGenome --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr
+perl Chameleolyser.pl --MaskReferenceGenome --WORKING_DIR=<WORKING_DIRECTORY> 
 ```
 
 ## Generate masked alignments and raw VCF
 ALIGNMENT_FP: Pass the complete path of the HG002 bam file that was downloaded in the first step in this demo.
 ```
-perl Chameleolyser.pl --GenerateMaskedAlignmentAndVcf --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr --SAMPLE_NAME=HG002 --ALIGNMENT_FP=<ALIGNMENT_FP> --NR_OF_THREADS=4
+perl Chameleolyser.pl --GenerateMaskedAlignmentAndVcf --WORKING_DIR=<WORKING_DIRECTORY> --SAMPLE_NAME=HG002 --ALIGNMENT_FP=<ALIGNMENT_FP> --NR_OF_THREADS=4
 ```
 
 ## Filter raw variants
