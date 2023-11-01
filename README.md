@@ -53,13 +53,13 @@ perl Chameleolyser.pl --PrepareBED --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=ch
 ## Mask reference genome
 
 ```
-perl Chameleolyser.pl --MaskReferenceGenome --WORKING_DIR=<WORKING_DIRECTORY>
+perl Chameleolyser.pl --MaskReferenceGenome --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr
 ```
 
 ## Generate masked alignments and raw VCF
 ALIGNMENT_FP: Pass the complete path of the HG002 bam file that was downloaded in the first step in this demo.
 ```
-perl Chameleolyser.pl --GenerateMaskedAlignmentAndVcf --WORKING_DIR=<WORKING_DIRECTORY> --SAMPLE_NAME=HG002 --ALIGNMENT_FP=<ALIGNMENT_FP> --NR_OF_THREADS=4
+perl Chameleolyser.pl --GenerateMaskedAlignmentAndVcf --WORKING_DIR=<WORKING_DIRECTORY> --PREFIX=chr --SAMPLE_NAME=HG002 --ALIGNMENT_FP=<ALIGNMENT_FP> --NR_OF_THREADS=4
 ```
 
 ## Filter raw variants
